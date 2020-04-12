@@ -1,46 +1,25 @@
 import 'package:flutter/material.dart';
+import '../win_check/win_data.dart';
 
-class GameScreen extends StatefulWidget {
+import '../models/tic_buttons.dart';
+import '../constants/constants.dart';
+import '../win_check/check_win.dart';
+import '../win_check/paint_line.dart';
+import '../screens/game_screen.dart';
+
+class GameScreenWithoutAi extends StatefulWidget {
+  static const pageId = 'GameScreen-without_ai';
   @override
-  _GameScreenState createState() => _GameScreenState();
+  _GameScreenWithoutAiState createState() => _GameScreenWithoutAiState();
 }
 
-class _GameScreenState extends State<GameScreen> {
-  List<List<String>> _tempField = [
-    ['', '', ''],
-    ['', '', ''],
-    ['', '', ''],
-  ];
-  String _tempString = '';
-  void _aiFieldHandler() {
-    int a = 0;
-    int i = 0;
-    int y = 0;
-    for (a = 0; a < 3; a++) {
-      for (i = 0; i < 3; i++) {
-        if (_ticButtons[y].winVal == 0) {
-          _tempString = '';
-        } else if (_ticButtons[y].winVal == 1) {
-          _tempString = 'o';
-        } else if (_ticButtons[y].winVal == 2) {
-          _tempString = 'x';
-        }
-
-        _tempField[a][i] = _tempString;
-
-        y++;
-      }
-    }
-//    for (int k = 0; k < 3; k++) {
-//      for (int t = 0; t < 3; t++) {
-//        print(_tempField[k][t]);
-//      }
-//    }
-  }
+class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
+  WinData win;
 
   int count = 0;
   bool _isPlayer;
   List<TicButtons> _ticButtons;
+  bool _showDialog = false;
   @override
   void initState() {
     super.initState();
@@ -51,78 +30,20 @@ class _GameScreenState extends State<GameScreen> {
         index: i,
         icon: Container(),
         isWidgetSet: false,
-        winVal: 0,
+        winVal: kNotSet,
       ));
     }
   }
 
-  bool _checkWinVal(int first, int second, int third) {
-    if (first + second + third == 3 || first + second + third == 6) {
-      return true;
-    } else {
-      return false;
+  bool _breakPoint() {
+    int countt = 0;
+    for (int o = 0; o < 9; o++) {
+      if (_ticButtons[o].isWidgetSet) {
+        countt++;
+      }
     }
-  }
-
-  bool _winCheck() {
-    int _temp(int i) {
-      return _ticButtons[i].winVal;
-    }
-
-    bool pass1 = _checkWinVal(
-      _temp(0),
-      _temp(1),
-      _temp(2),
-    );
-    bool pass2 = _checkWinVal(
-      _temp(3),
-      _temp(4),
-      _temp(5),
-    );
-    bool pass3 = _checkWinVal(
-      _temp(6),
-      _temp(7),
-      _temp(8),
-    );
-    bool pass4 = _checkWinVal(
-      _temp(0),
-      _temp(3),
-      _temp(5),
-    );
-    bool pass5 = _checkWinVal(
-      _temp(1),
-      _temp(4),
-      _temp(7),
-    );
-    bool pass6 = _checkWinVal(
-      _temp(2),
-      _temp(5),
-      _temp(8),
-    );
-    bool pass7 = _checkWinVal(
-      _temp(0),
-      _temp(4),
-      _temp(8),
-    );
-    bool pass8 = _checkWinVal(
-      _temp(2),
-      _temp(4),
-      _temp(6),
-    );
-    bool pass9 = _checkWinVal(
-      _temp(0),
-      _temp(1),
-      _temp(2),
-    );
-    if (pass1 ||
-        pass2 ||
-        pass3 ||
-        pass4 ||
-        pass5 ||
-        pass6 ||
-        pass7 ||
-        pass8 ||
-        pass9) {
+    if (countt >= 9) {
+//      print('widgets are being set somehow');
       return true;
     } else {
       return false;
@@ -130,11 +51,20 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _onTap(int index) {
+    win = WinCheck.winCheck(_ticButtons);
+    if (_breakPoint() || win != null) {
+      setState(() {
+        _showDialog = true;
+      });
+
+//      print('a win or breakpoint occured');
+      return;
+    }
+
     if (_ticButtons[index].isWidgetSet) {
-      print('there is a container ${index.toString()}');
+//      print('there is a container ${index.toString()}');
       return;
     } else if (!_ticButtons[index].isWidgetSet) {
-//      print('There is no container ${index.toString()}');
       if (_isPlayer) {
         setState(() {
           _ticButtons[index].icon = Icon(
@@ -142,11 +72,12 @@ class _GameScreenState extends State<GameScreen> {
             color: Colors.green,
             size: 60.0,
           );
-          _ticButtons[index].winVal = 1;
+          _ticButtons[index].winVal = kIsPlayer;
 
           _ticButtons[index].isWidgetSet = true;
+
+          WinCheck.winCheck(_ticButtons);
           _isPlayer = !_isPlayer;
-          _winCheck();
         });
       } else if (!_isPlayer) {
         setState(() {
@@ -155,13 +86,23 @@ class _GameScreenState extends State<GameScreen> {
             color: Colors.lightBlueAccent,
             size: 60.0,
           );
-          _ticButtons[index].winVal = 2;
+          _ticButtons[index].winVal = kIsOpponent;
           _ticButtons[index].isWidgetSet = true;
+
+          WinCheck.winCheck(_ticButtons);
           _isPlayer = !_isPlayer;
         });
       }
     }
-//    _aiFieldHandler();
+    win = WinCheck.winCheck(_ticButtons);
+    if (_breakPoint() || win != null) {
+      setState(() {
+        _showDialog = true;
+      });
+
+//      print('a win or breakpoint occured');
+      return;
+    }
   }
 
   Widget _buildGridTiles(int index) {
@@ -171,14 +112,58 @@ class _GameScreenState extends State<GameScreen> {
       child: Container(
         alignment: Alignment.center,
         padding: EdgeInsets.all(10.0),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.white24),
-        ),
+        decoration: BoxDecoration(),
         child: _ticButtons[index].icon,
-//        child: Container(),
       ),
     ));
   }
+
+  Container get buildVerticalLine => Container(
+      margin: EdgeInsets.only(
+        top: 10.0,
+        bottom: 50.0,
+      ),
+      color: Colors.white24,
+      width: 5.0);
+
+  Container get buildHorizontalLine => Container(
+      margin: EdgeInsets.only(
+        left: 20.0,
+        right: 20.0,
+        bottom: 40.0,
+      ),
+      color: Colors.white24,
+      height: 5.0);
+
+  Widget buildGridView() => AspectRatio(
+      aspectRatio: 1,
+      child: Stack(
+        children: [
+          Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            buildHorizontalLine,
+            buildHorizontalLine,
+          ]),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+            buildVerticalLine,
+            buildVerticalLine,
+          ])
+        ],
+      ));
+
+  Widget _messageString() {
+    Widget message;
+    if (win.row == -1) {
+      message = Text('Draw');
+//      print(win.row.toString());
+
+    } else {
+      message = Text(win.playerWon ? 'Player "0" won' : 'Player "X" won ');
+    }
+    return message;
+  }
+
+  Widget buildWinCross() => AspectRatio(
+      aspectRatio: 1.0, child: CustomPaint(painter: PaintLine(win)));
 
   @override
   Widget build(BuildContext context) {
@@ -187,38 +172,81 @@ class _GameScreenState extends State<GameScreen> {
         title: Text('Tic Tac Toe'),
       ),
       backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            Text(
-              _isPlayer ? 'It\'s your turn' : 'It\'s your opponents turn',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24.0,
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Container(
-                  height: MediaQuery.of(context).size.height * 0.68,
-                  child: GridView.count(
-                    crossAxisCount: 3,
-                    children: List<Widget>.generate(9, _buildGridTiles),
+      body: _showDialog
+          ? AlertDialog(
+              title: _messageString(),
+              content: Text('Replay with AI or Friend?'),
+              actions: <Widget>[
+                FlatButton(
+                    onPressed: () => Navigator.pushReplacementNamed(
+                        context, GameScreen.pageId),
+                    child: Text('AI')),
+                FlatButton(
+                    onPressed: () => Navigator.pushReplacementNamed(
+                        context, GameScreenWithoutAi.pageId),
+                    child: Text('Friend')),
+              ],
+            )
+          : SafeArea(
+              child: Stack(
+                children: <Widget>[
+                  Column(
+                    children: <Widget>[
+                      Expanded(
+                        child: Center(
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.70,
+                            child: buildGridView(),
+                          ),
+                        ),
+                      )
+                    ],
                   ),
-                ),
+                  buildWinCross(),
+                  Column(
+                    children: <Widget>[
+//                Text(
+//                  _isPlayer ? 'It\'s your turn' : 'It\'s your opponents turn',
+//                  style: TextStyle(
+//                    color: Colors.white,
+//                    fontSize: 24.0,
+//                  ),
+//                ),
+                      Expanded(
+                        child: Center(
+                          child: Container(
+//                      padding: EdgeInsets.all(60.0),
+                            height: MediaQuery.of(context).size.height * 0.70,
+                            child: GridView.count(
+                              crossAxisCount: 3,
+                              children:
+                                  List<Widget>.generate(9, _buildGridTiles),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
-}
 
-class TicButtons {
-  final int index;
-  Widget icon;
-  bool isWidgetSet;
-  int winVal;
-  TicButtons({this.index: -1, this.icon, this.isWidgetSet, this.winVal});
+  int getIndexPos(int numb) {
+    int num = numb;
+
+    int binaryValue = 0;
+
+    int i = 1;
+
+    while (num > 0) {
+      binaryValue = binaryValue + (num % 3) * i;
+
+      num = (num / 3).floor();
+
+      i = i * 10;
+    }
+    return binaryValue;
+  }
 }

@@ -3,6 +3,7 @@ import 'dart:math';
 import './decision.dart';
 
 class AI {
+  int count = 0;
   List<List<String>> _field;
   String _playerChar;
   String _aiChar;
@@ -120,6 +121,11 @@ class AI {
         _decision = new Decision(_row, _column);
         break;
       }
+      if (count > 20) {
+        break;
+      }
+//      print('loop hapenning');
+      count++;
     }
   }
 }
