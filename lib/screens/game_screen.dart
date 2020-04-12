@@ -140,7 +140,7 @@ class _GameScreenState extends State<GameScreen> {
           _ticButtons[index].icon = Icon(
             Icons.panorama_fish_eye,
             color: Colors.green,
-            size: 60.0,
+            size: 80.0,
           );
           _ticButtons[index].winVal = kIsPlayer;
 
@@ -157,7 +157,7 @@ class _GameScreenState extends State<GameScreen> {
           _ticButtons[_aiMoveIndex].icon = Icon(
             Icons.clear,
             color: Colors.lightBlueAccent,
-            size: 60.0,
+            size: 80.0,
           );
           _ticButtons[_aiMoveIndex].winVal = kIsOpponent;
           _ticButtons[_aiMoveIndex].isWidgetSet = true;
@@ -201,8 +201,8 @@ class _GameScreenState extends State<GameScreen> {
       onTap: () => _onTap(index),
       child: Container(
         alignment: Alignment.center,
-        padding: EdgeInsets.all(10.0),
-        decoration: BoxDecoration(),
+
+        decoration: BoxDecoration(border: Border.all(color: Colors.white24)),
         child: _ticButtons[index].icon,
 //        child: Container(),
       ),
@@ -223,38 +223,6 @@ class _GameScreenState extends State<GameScreen> {
 
   Widget buildWinCross() => AspectRatio(
       aspectRatio: 1.0, child: CustomPaint(painter: PaintLine(win)));
-
-  Container get buildVerticalLine => Container(
-      margin: EdgeInsets.only(
-        top: 10.0,
-        bottom: 50.0,
-      ),
-      color: Colors.white24,
-      width: 5.0);
-
-  Container get buildHorizontalLine => Container(
-      margin: EdgeInsets.only(
-        left: 20.0,
-        right: 20.0,
-        bottom: 40.0,
-      ),
-      color: Colors.white24,
-      height: 5.0);
-
-  Widget buildGridView() => AspectRatio(
-      aspectRatio: 1,
-      child: Stack(
-        children: [
-          Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            buildHorizontalLine,
-            buildHorizontalLine,
-          ]),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            buildVerticalLine,
-            buildVerticalLine,
-          ])
-        ],
-      ));
 
   @override
   Widget build(BuildContext context) {
@@ -283,18 +251,6 @@ class _GameScreenState extends State<GameScreen> {
               )
             : Stack(
                 children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Expanded(
-                        child: Center(
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.70,
-                            child: buildGridView(),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
                   buildWinCross(),
                   Column(
                     children: <Widget>[
@@ -310,7 +266,8 @@ class _GameScreenState extends State<GameScreen> {
                       Expanded(
                         child: Center(
                           child: Container(
-//                            padding: EdgeInsets.all(20.0),
+                            padding: EdgeInsets.all(10.0),
+                            margin: EdgeInsets.only(top: 90),
                             height: MediaQuery.of(context).size.height * 0.70,
                             child: GridView.count(
                               crossAxisCount: 3,

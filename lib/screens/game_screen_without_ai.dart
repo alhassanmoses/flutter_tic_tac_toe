@@ -70,7 +70,7 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
           _ticButtons[index].icon = Icon(
             Icons.panorama_fish_eye,
             color: Colors.green,
-            size: 60.0,
+            size: 80.0,
           );
           _ticButtons[index].winVal = kIsPlayer;
 
@@ -84,7 +84,7 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
           _ticButtons[index].icon = Icon(
             Icons.clear,
             color: Colors.lightBlueAccent,
-            size: 60.0,
+            size: 80.0,
           );
           _ticButtons[index].winVal = kIsOpponent;
           _ticButtons[index].isWidgetSet = true;
@@ -111,44 +111,11 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
       onTap: () => _onTap(index),
       child: Container(
         alignment: Alignment.center,
-        padding: EdgeInsets.all(10.0),
-        decoration: BoxDecoration(),
+        decoration: BoxDecoration(border: Border.all(color: Colors.white24)),
         child: _ticButtons[index].icon,
       ),
     ));
   }
-
-  Container get buildVerticalLine => Container(
-      margin: EdgeInsets.only(
-        top: 10.0,
-        bottom: 50.0,
-      ),
-      color: Colors.white24,
-      width: 5.0);
-
-  Container get buildHorizontalLine => Container(
-      margin: EdgeInsets.only(
-        left: 20.0,
-        right: 20.0,
-        bottom: 40.0,
-      ),
-      color: Colors.white24,
-      height: 5.0);
-
-  Widget buildGridView() => AspectRatio(
-      aspectRatio: 1,
-      child: Stack(
-        children: [
-          Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            buildHorizontalLine,
-            buildHorizontalLine,
-          ]),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            buildVerticalLine,
-            buildVerticalLine,
-          ])
-        ],
-      ));
 
   Widget _messageString() {
     Widget message;
@@ -190,28 +157,18 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
           : SafeArea(
               child: Stack(
                 children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Expanded(
-                        child: Center(
-                          child: Container(
-                            height: MediaQuery.of(context).size.height * 0.70,
-                            child: buildGridView(),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
                   buildWinCross(),
                   Column(
                     children: <Widget>[
-//                Text(
-//                  _isPlayer ? 'It\'s your turn' : 'It\'s your opponents turn',
-//                  style: TextStyle(
-//                    color: Colors.white,
-//                    fontSize: 24.0,
-//                  ),
-//                ),
+                      Text(
+                        _isPlayer
+                            ? 'It\'s your turn'
+                            : 'It\'s your opponents turn',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24.0,
+                        ),
+                      ),
                       Expanded(
                         child: Center(
                           child: Container(
