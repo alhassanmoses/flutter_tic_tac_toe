@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../ai/ai.dart';
-import '../ai/./decision.dart';
-
 class GameScreen extends StatefulWidget {
   @override
   _GameScreenState createState() => _GameScreenState();
@@ -14,9 +11,33 @@ class _GameScreenState extends State<GameScreen> {
     ['', '', ''],
     ['', '', ''],
   ];
-  AI ai;
-  int _aiMoveIndex;
   String _tempString = '';
+  void _aiFieldHandler() {
+    int a = 0;
+    int i = 0;
+    int y = 0;
+    for (a = 0; a < 3; a++) {
+      for (i = 0; i < 3; i++) {
+        if (_ticButtons[y].winVal == 0) {
+          _tempString = '';
+        } else if (_ticButtons[y].winVal == 1) {
+          _tempString = 'o';
+        } else if (_ticButtons[y].winVal == 2) {
+          _tempString = 'x';
+        }
+
+        _tempField[a][i] = _tempString;
+
+        y++;
+      }
+    }
+//    for (int k = 0; k < 3; k++) {
+//      for (int t = 0; t < 3; t++) {
+//        print(_tempField[k][t]);
+//      }
+//    }
+  }
+
   int count = 0;
   bool _isPlayer;
   List<TicButtons> _ticButtons;
@@ -35,38 +56,6 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
-  void _aiMove() {
-    int a = 0;
-    int i = 0;
-    int y = 0;
-    for (a = 0; a < 3; a++) {
-      for (i = 0; i < 3; i++) {
-        if (_ticButtons[y].winVal == 0) {
-          _tempString = '';
-        } else if (_ticButtons[y].winVal == 1) {
-          _tempString = 'o';
-        } else if (_ticButtons[y].winVal == 2) {
-          _tempString = 'x';
-        }
-        _tempField[a][i] = _tempString;
-        y++;
-      }
-    }
-
-    var aiMove = ai.getDecision();
-    String f = aiMove.row.toString();
-    String s = aiMove.column.toString();
-    _aiMoveIndex = int.parse('$f$s', radix: 3);
-    print('ai move index is: $_aiMoveIndex');
-//      print('ai move is $number');
-
-//    for (int k = 0; k < 3; k++) {
-//      for (int t = 0; t < 3; t++) {
-//        print(_tempField[k][t]);
-//      }
-//    }
-  }
-
   bool _checkWinVal(int first, int second, int third) {
     if (first + second + third == 3 || first + second + third == 6) {
       return true;
@@ -74,10 +63,6 @@ class _GameScreenState extends State<GameScreen> {
       return false;
     }
   }
-
-//  void _displayAiMove() {
-//    _aiMove();
-//  }
 
   bool _winCheck() {
     int _temp(int i) {
@@ -163,37 +148,21 @@ class _GameScreenState extends State<GameScreen> {
           _isPlayer = !_isPlayer;
           _winCheck();
         });
-      }
-      if (!_isPlayer) {
-        _aiMove();
-//        _makeAiMove();
+      } else if (!_isPlayer) {
         setState(() {
-          _ticButtons[_aiMoveIndex].icon = Icon(
+          _ticButtons[index].icon = Icon(
             Icons.clear,
             color: Colors.lightBlueAccent,
             size: 60.0,
           );
-          _ticButtons[_aiMoveIndex].winVal = 2;
-          _ticButtons[_aiMoveIndex].isWidgetSet = true;
+          _ticButtons[index].winVal = 2;
+          _ticButtons[index].isWidgetSet = true;
           _isPlayer = !_isPlayer;
         });
       }
     }
+//    _aiFieldHandler();
   }
-
-//  void _makeAiMove() {
-//    print(_aiMoveIndex);
-//    setState(() {
-//      _ticButtons[_aiMoveIndex].icon = Icon(
-//        Icons.clear,
-//        color: Colors.lightBlueAccent,
-//        size: 60.0,
-//      );
-//      _ticButtons[_aiMoveIndex].winVal = 2;
-//      _ticButtons[_aiMoveIndex].isWidgetSet = true;
-//      _isPlayer = !_isPlayer;
-//    });
-//  }
 
   Widget _buildGridTiles(int index) {
     return GridTile(
@@ -213,7 +182,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ai = AI(_tempField, '0', 'x');
     return Scaffold(
       appBar: AppBar(
         title: Text('Tic Tac Toe'),
