@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../win_check/win_data.dart';
 
@@ -17,7 +19,9 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
   WinData win;
 
   int count = 0;
+  MediaQueryData _media;
   bool _isPlayer;
+  bool _winOrDraw = false;
   List<TicButtons> _ticButtons;
   bool _showDialog = false;
   @override
@@ -50,14 +54,43 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
     }
   }
 
+  Widget _buildButtonChoicesRow() {
+    return Positioned(
+      bottom: _media.size.height * 0.04,
+      left: _media.size.width * 0.25,
+      child: Center(
+        child: Row(
+          children: <Widget>[
+            RaisedButton(
+              color: Colors.blueGrey,
+              onPressed: () {
+                setState(() {
+                  _showDialog = true;
+                });
+              },
+              child: Text('Reset Game'),
+            ),
+            SizedBox(
+              width: 20.0,
+            ),
+            RaisedButton(
+              color: Colors.blueGrey,
+              onPressed: () {
+                setState(() {
+                  exit(0);
+                });
+              },
+              child: Text('Exit'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _onTap(int index) {
     win = WinCheck.winCheck(_ticButtons);
     if (_breakPoint() || win != null) {
-      setState(() {
-        _showDialog = true;
-      });
-
-//      print('a win or breakpoint occured');
       return;
     }
 
@@ -90,6 +123,7 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
           _ticButtons[index].isWidgetSet = true;
 
           WinCheck.winCheck(_ticButtons);
+
           _isPlayer = !_isPlayer;
         });
       }
@@ -97,7 +131,8 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
     win = WinCheck.winCheck(_ticButtons);
     if (_breakPoint() || win != null) {
       setState(() {
-        _showDialog = true;
+        _winOrDraw = true;
+//        _showDialog = true;
       });
 
 //      print('a win or breakpoint occured');
@@ -117,23 +152,37 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
     ));
   }
 
-  Widget _messageString() {
-    Widget message;
-    if (win.row == -1) {
-      message = Text('Draw');
-//      print(win.row.toString());
+  Widget _whoMovesNext() {
+    String string = '';
 
+    if (win != null) {
+      if (win.row == -1) {
+        string = 'Draw';
+      } else {
+        string = _isPlayer ? 'Player "X" won' : 'Player "O" won';
+      }
     } else {
-      message = Text(win.playerWon ? 'Player "0" won' : 'Player "X" won ');
+      string = _isPlayer ? 'It\'s your turn' : 'It\'s your opponents turn';
     }
+    Widget message = Padding(
+      padding: EdgeInsets.all(20.0),
+      child: Text(
+        string,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 24.0,
+        ),
+      ),
+    );
     return message;
   }
 
-  Widget buildWinCross() => AspectRatio(
+  Widget _buildWinCross() => AspectRatio(
       aspectRatio: 1.0, child: CustomPaint(painter: PaintLine(win)));
 
   @override
   Widget build(BuildContext context) {
+    _media = MediaQuery.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Text('Tic Tac Toe'),
@@ -141,7 +190,7 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
       backgroundColor: Colors.black,
       body: _showDialog
           ? AlertDialog(
-              title: _messageString(),
+//              title: Text('Reset'),
               content: Text('Replay with AI or Friend?'),
               actions: <Widget>[
                 FlatButton(
@@ -157,23 +206,14 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
           : SafeArea(
               child: Stack(
                 children: <Widget>[
-                  buildWinCross(),
                   Column(
                     children: <Widget>[
-                      Text(
-                        _isPlayer
-                            ? 'It\'s your turn'
-                            : 'It\'s your opponents turn',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.0,
-                        ),
-                      ),
+                      _whoMovesNext(),
                       Expanded(
                         child: Center(
                           child: Container(
 //                      padding: EdgeInsets.all(60.0),
-                            height: MediaQuery.of(context).size.height * 0.70,
+                            height: _media.size.height * 0.70,
                             child: GridView.count(
                               crossAxisCount: 3,
                               children:
@@ -184,6 +224,8 @@ class _GameScreenWithoutAiState extends State<GameScreenWithoutAi> {
                       ),
                     ],
                   ),
+                  if (_winOrDraw) _buildWinCross(),
+                  if (_winOrDraw) _buildButtonChoicesRow(),
                 ],
               ),
             ),

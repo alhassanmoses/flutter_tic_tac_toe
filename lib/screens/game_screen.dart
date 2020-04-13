@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../win_check/win_data.dart';
 
@@ -29,9 +31,12 @@ class _GameScreenState extends State<GameScreen> {
     ['', '', ''],
   ];
 //  int co = 0;
+
   AI ai;
+  MediaQueryData _media;
   int _aiMoveIndex;
   WinData win;
+  bool _winOrDraw = false;
   bool _showDialog = false;
   String _tempString = '';
   int count = 0;
@@ -65,6 +70,40 @@ class _GameScreenState extends State<GameScreen> {
     } else {
       return false;
     }
+  }
+
+  Widget _buildButtonChoicesRow() {
+    return Positioned(
+      bottom: _media.size.height * 0.04,
+      left: _media.size.width * 0.25,
+      child: Center(
+        child: Row(
+          children: <Widget>[
+            RaisedButton(
+              color: Colors.blueGrey,
+              onPressed: () {
+                setState(() {
+                  _showDialog = true;
+                });
+              },
+              child: Text('Reset Game'),
+            ),
+            SizedBox(
+              width: 20.0,
+            ),
+            RaisedButton(
+              color: Colors.blueGrey,
+              onPressed: () {
+                setState(() {
+                  exit(0);
+                });
+              },
+              child: Text('Exit'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _aiMove() {
@@ -109,12 +148,6 @@ class _GameScreenState extends State<GameScreen> {
 //    print('count is $co');
     win = WinCheck.winCheck(_ticButtons);
     if (_breakPoint() || win != null) {
-      setState(() {
-        _showDialog = true;
-      });
-//      print(
-//          'the row is: ${win.row.toString()} the col is: ${win.col.toString()} ');
-      print('a win or breakpoint occured');
       return;
     }
 
@@ -170,11 +203,12 @@ class _GameScreenState extends State<GameScreen> {
     win = WinCheck.winCheck(_ticButtons);
     if (_breakPoint() || win != null) {
       setState(() {
-        _showDialog = true;
+        _winOrDraw = true;
+//        _showDialog = true;
       });
 //      print(
 //          'the row is: ${win.row.toString()} the col is: ${win.col.toString()} ');
-//      print('a win or breakpoint occured');
+      print('a win or breakpoint occured');
       return;
     }
 
@@ -201,7 +235,6 @@ class _GameScreenState extends State<GameScreen> {
       onTap: () => _onTap(index),
       child: Container(
         alignment: Alignment.center,
-
         decoration: BoxDecoration(border: Border.all(color: Colors.white24)),
         child: _ticButtons[index].icon,
 //        child: Container(),
@@ -209,23 +242,41 @@ class _GameScreenState extends State<GameScreen> {
     ));
   }
 
-  Widget _messageString() {
-    Widget message;
-    if (win.row == -1) {
-      message = Text('Draw');
-//      print(win.row.toString());
+  Widget _whoMovesNext() {
+    String string = '';
 
+    if (win != null) {
+      if (win.row == -1) {
+        string = 'Draw';
+      } else {
+        string = win.playerWon ? 'Player "O" won' : 'Player "X" won';
+      }
     } else {
-      message = Text(win.playerWon ? 'Player "0" won' : 'Player "X" won ');
+      string = _isPlayer ? 'It\'s your turn' : 'It\'s your opponents turn';
     }
+    Widget message = Padding(
+      padding: EdgeInsets.all(20.0),
+      child: Text(
+        string,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 30.0,
+        ),
+      ),
+    );
     return message;
   }
 
   Widget buildWinCross() => AspectRatio(
-      aspectRatio: 1.0, child: CustomPaint(painter: PaintLine(win)));
+        aspectRatio: 1.0,
+        child: CustomPaint(
+          painter: PaintLine(win),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
+    _media = MediaQuery.of(context);
     ai = AI(_tempField, '0', 'x');
     return Scaffold(
       appBar: AppBar(
@@ -236,8 +287,8 @@ class _GameScreenState extends State<GameScreen> {
       body: SafeArea(
         child: _showDialog
             ? AlertDialog(
-                title: _messageString(),
-                content: Text('Replay with AI or Friend?'),
+//                title: Text('Reset'),
+                content: Text('Re-play with AI or Friend?'),
                 actions: <Widget>[
                   FlatButton(
                       onPressed: () => Navigator.pushReplacementNamed(
@@ -251,24 +302,13 @@ class _GameScreenState extends State<GameScreen> {
               )
             : Stack(
                 children: <Widget>[
-                  buildWinCross(),
                   Column(
                     children: <Widget>[
-                      Text(
-                        _isPlayer
-                            ? 'It\'s your turn'
-                            : 'It\'s your opponents turn',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.0,
-                        ),
-                      ),
+                      _whoMovesNext(),
                       Expanded(
                         child: Center(
                           child: Container(
-                            padding: EdgeInsets.all(10.0),
-                            margin: EdgeInsets.only(top: 90),
-                            height: MediaQuery.of(context).size.height * 0.70,
+                            height: _media.size.height * 0.70,
                             child: GridView.count(
                               crossAxisCount: 3,
                               children:
@@ -279,6 +319,8 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     ],
                   ),
+                  if (_winOrDraw) buildWinCross(),
+                  if (_winOrDraw) _buildButtonChoicesRow(),
                 ],
               ),
       ),
